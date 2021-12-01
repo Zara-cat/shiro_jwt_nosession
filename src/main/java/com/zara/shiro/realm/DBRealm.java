@@ -1,15 +1,20 @@
 package com.zara.shiro.realm;
 
+import com.zara.entity.Perms;
 import com.zara.entity.User;
 import com.zara.service.IUserService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
+
+import java.util.List;
 
 /**
  * @author : [Zara-cat]
@@ -28,6 +33,7 @@ public class DBRealm extends AuthorizingRealm {
 
     /**
      * 限定这个 Realm 只处理 UsernamePasswordToken
+     *
      * @param token {@link UsernamePasswordToken}
      * @return boolean
      */
@@ -44,10 +50,10 @@ public class DBRealm extends AuthorizingRealm {
         String username = authenticationToken.getPrincipal().toString();
         //查询数据库获取用户信息。关于 service 对象 可以手动注入也可以依赖注入
         User user = service.findUserByUsername(username);
-        if (!ObjectUtils.isEmpty(user)){
-            if (user.getLocked() == 1){
+        if (!ObjectUtils.isEmpty(user)) {
+            if (user.getLocked() == 1) {
                 throw new LockedAccountException();
-            }else {
+            } else {
                 /**
                  * 将获取到的用户数据封装成 AuthenticationInfo 对象返回，此处封装为 SimpleAuthenticationInfo 对象。
                  *  参数1. 认证的实体信息，可以是从数据库中获取到的用户实体类对象或者用户名
@@ -63,19 +69,33 @@ public class DBRealm extends AuthorizingRealm {
                 );
                 return info;
             }
-        }else {
+        } else {
             throw new UnknownAccountException();
         }
     }
+
     //授权
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         System.out.println("进入 DBRealm Authorization");
+        SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
         //获取当前用户
-        User principal = (User) SecurityUtils.getSubject().getPrincipal();
+        User user = (User) SecurityUtils.getSubject().getPrincipal();
         //查询数据库获取用户的角色信息
-        //查询数据库获取用户的权限信息
-        return null;
+        User dbUser = service.findRolesByUserName(user.getUsername());
+        if (!ObjectUtils.isEmpty(dbUser) && !CollectionUtils.isEmpty(dbUser.getRoles())) {
+            dbUser.getRoles().stream().forEach(role -> {
+                info.addRole(role.getName());
+                //查询数据库获取用户的权限信息
+                List<Perms> perms = service.findPermsByRoleId(role.getId().intValue());
+               if (!CollectionUtils.isEmpty(perms)){
+                   for (Perms perm : perms) {
+                        info.addStringPermission(perm.getName());
+                   }
+               }
+            });
+        }
+        return info;
     }
 
 
