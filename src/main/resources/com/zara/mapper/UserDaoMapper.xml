@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zara.dao.IUserDao">
+    <insert id="save" parameterType="com.zara.entity.User" useGeneratedKeys="true" keyProperty="id">
+        insert into t_user values (#{user.id},#{user.username},#{user.password},#{user.salt},2)
+    </insert>
+    <select id="findByUserName" resultType="com.zara.entity.User">
+        select id,username,password,salt,locked from t_user where username = #{username}
+    </select>
+    <resultMap id="userMap" type="com.zara.entity.User">
+        <id column="uid" property="id"></id>
+        <result column="username" property="username"></result>
+        <collection property="roles" javaType="list" ofType="com.zara.entity.Role">
+            <id column="id" property="id"></id>
+            <result column="name" property="name"></result>
+        </collection>
+    </resultMap>
+    <select id="findRolesByUserName" resultType="com.zara.entity.User" resultMap="userMap">
+        SELECT u.id uid,u.username,r.id,r.name
+        FROM t_user u
+        LEFT JOIN t_user_role ur
+        on u.id = ur.userId
+        left join t_role r
+        on ur.roleId = r.id
+        where u.username = #{username}
+    </select>
+    <select id="findPermsByRoleId" resultType="com.zara.entity.Perms">
+        select ps.id,ps.name,ps.url,r.name
+        from t_role r
+        left join t_role_perms rp
+        on r.id = rp.roleId
+        left join t_pers ps
+        on ps.id = rp.permsId
+        where r.id = #{roleId}
+    </select>
+</mapper>

@@ -11,37 +11,23 @@ import java.util.List;
 /**
  * @author : [Zara-cat]
  * @version : [v1.0]
- * @className : User
- * @description : [用户实体类]
- * @createTime : [2021/11/30 16:45]
+ * @className : Role
+ * @description : [角色实体类]
+ * @createTime : [2021/12/1 11:19]
  * @updateUser : [Zara-cat]
- * @updateTime : [2021/11/30 16:45]
+ * @updateTime : [2021/12/1 11:19]
  * @updateRemark : [描述说明本次修改内容]
  */
 @Data
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends EntiyBasic {
+public class Role extends EntiyBasic {
     private static final long serialVersionUID = 1L;
-    //主键ID
+    // id
     private Long id;
-
-    //登录用户名
-    private String username;
-
-    //登录密码
-    private String password;
-
-    //昵称
-    private String nickName;
-
-    //盐
-    private String slat;
-
-    //账户是否被锁定 1.锁定 2.未锁定
-    private int locked;
-
-    //角色集合
-    private List<Role> roles;
+    // 角色色名称
+    private String name;
+    //权限集合
+    private List<Perms> perms;
 }
