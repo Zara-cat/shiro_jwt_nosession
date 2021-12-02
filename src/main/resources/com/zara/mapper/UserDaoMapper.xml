@@ -29,7 +29,7 @@
         from t_role r
         left join t_role_perms rp
         on r.id = rp.roleId
-        left join t_pers ps
+        left join t_perms ps
         on ps.id = rp.permsId
         where r.id = #{roleId}
     </select>

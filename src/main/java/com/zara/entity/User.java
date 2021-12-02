@@ -37,7 +37,7 @@ public class User extends EntiyBasic {
     private String nickName;
 
     //盐
-    private String slat;
+    private String salt;
 
     //账户是否被锁定 1.锁定 2.未锁定
     private int locked;

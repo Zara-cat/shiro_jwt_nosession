@@ -64,7 +64,7 @@ public class DBRealm extends AuthorizingRealm {
                 SimpleAuthenticationInfo info = new SimpleAuthenticationInfo(
                         user,
                         user.getPassword(),
-                        ByteSource.Util.bytes(user.getSlat()),
+                        ByteSource.Util.bytes(user.getSalt()),
                         this.getName()
                 );
                 return info;

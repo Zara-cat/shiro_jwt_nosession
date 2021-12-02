@@ -56,10 +56,11 @@ public class JwtRealm extends AuthorizingRealm {
         String principal = jwtToken.getPrincipal().toString();
         //查询数据库获取用户信息
         User user = service.findUserByUsername(principal);
-        if (!ObjectUtils.isEmpty(user)){
+        if (ObjectUtils.isEmpty(user)){
             //用户不存在
             throw new UnknownAccountException("用户不存在！");
         }
+        System.out.println(user);
         if (user.getLocked() == 1){
             throw new LockedAccountException("该用户已被锁定，暂时无法登录");
         }

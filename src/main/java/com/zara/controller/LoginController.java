@@ -47,7 +47,7 @@ public class LoginController {
             String jwtToken = JwtUtils.sign(userName, JwtUtils.SECRET);
             //将签发的 JWT token 设置到 HttpServletResponse 的 Header 中
             ((HttpServletResponse) response).setHeader(JwtUtils.AUTH_HEADER,jwtToken);
-            return Responder.successful();
+            return Responder.successful(ExecutionState.USER_LOGIN_SUCCESS);
         } catch (UnknownAccountException e) { //账号不存在
             return Responder.failure(ExecutionState.USER_ACCOUNT_NOT_FOUND);
         }catch (IncorrectCredentialsException e){ //账号与密码不匹配

@@ -24,6 +24,7 @@ public class UserServiceImpl implements IUserService {
 
     @Autowired
     private IUserDao dao;
+
     @Override
     public User findUserByUsername(String userName) {
         return dao.findByUserName(userName);

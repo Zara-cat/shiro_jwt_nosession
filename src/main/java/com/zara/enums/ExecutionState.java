@@ -23,7 +23,7 @@ public enum ExecutionState {
     /**
      * 客户端请求错误
      */
-    OK(2000, "成功"),
+    OK(1000, "成功"),
     REQ_FORMAT_ERROR(1001, "参数格式错误"),
     REQ_ILLEGAL_CHARACTER(1002, "非法字符"),
     REQ_ARGUMENT_TYPE_MISMATCH(1007, "参数类型不匹配"),
@@ -34,6 +34,7 @@ public enum ExecutionState {
     /**
      * 用户操作错误
      */
+    USER_LOGIN_SUCCESS(2000,"登录成功！"),
     USER_UNAUTHORIZED(2001, "操作未授权"),
     USER_UNAUTHENTICATED(2002, "身份未认证"),
     USER_INVALID_TOKEN(2003, "无效 token"),
