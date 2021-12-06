@@ -29,4 +29,6 @@ shiro + mybatis + jwt +redis 实现前后端无状态token认证授权（内含t
 2. 再次请求时候，必须 AccessToken 没失效以及 Redis 存在所对应的 RefreshToken ，并且 RefreshToken 的时间戳和 AccessToken 信息中的时间戳一致才算 TOKEN 验证通过，才能继续访问我们具体的请求资源。如果退出登录再次登录获取新的 AccessToken ，旧的 AcessToken 就认证不了了，因为 Redis 中存放的 RefreshToken 时间戳只会和最新的 AccessToken 信息中携带的时间戳一致，这样每个用户就只能使用最新的 AccessToken 认证。
 3. Redis 的 RefreshToken 也可以用来判断用户是否在线，如果删除 Redis 的某个 RefreshToken，那这个 RefreshToken 所对应的 AccessToken 之后也就无法进行 token 认证了。就相当于控制了用户的登录，可以剔除用户。
 ## 根据 RefreshToken 自动刷新 AccessToken
-1. 
+1. 如本案例中的 AccessToken 过期时间为5分钟，RefreshToken 过期时间为 60 分钟。当登录时间过了5分钟之后，当然 AccessToken 便会过期失效，再次带上 AccessToken 访问 在我们自定义的 JWTReaml密码校验器 JwtCredentialsMatcher 我们会对当前访问 Token 进行校验，当 redis 中的 RefreshToken 和 AccessToken信息中的时间戳一致，判断一下 AccessToken 是否过期 ，过期就抛出 ExpiredCredentialsException 异常，代表 token 过期，需要刷新。
+2. 当我们在  JWTRealm 中抛出的异常我们在 JWTFilter 中进行异常分析，然后需要刷新 Token 的话，就重新生成一个 Token ，同时更新一下AccessToken 和 RefreshToken 的时间戳，以及 RefreshToken 的过期时间。然后新生成的 AccessToken 再封装成 TOKEN对象(这里说的 Token 对象就跟我们登录时候UsernamePasswordToken一样)，然后再调用 login 方法过一次 token校验，这样 token 验证就通过了。并把刷新的 AccessToken 存放在响应头中返回
+3. 同时前端进行获取替换，下次用新的 AccessToken 进行访问即可，前端可做一个请求处理，每次请求响应都需要查看一下请求头中是否有我们约定好的 Token标识，有的话进行 AccessToken 替换更新，防止下一次请求使用旧的 AccessToken 进行访问。导致访问失败！
