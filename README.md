@@ -1,4 +1,4 @@
-shiro + mybatis + jwt +redis 实现前后端无状态token认证授权（内含token刷新机制）
+shiro + mybatis + jwt +redis 实现前后端无状态token认证授权（内含token刷新机制，在线用户，踢人下线等）
 ***
 # 简介
 1. 通过对shiro的学习，我发现shiro在处理前后端未分离的项目那是一个真的方便，如：thymeleaf、jsp 的 集成整合，但是目前的行业需求已经方案大多都是前后端业务。也就是在前后端业务处理的时候，没有了session 域。接下来再进行 shiro 进行认证授权处理会很麻烦。
@@ -23,5 +23,10 @@ shiro + mybatis + jwt +redis 实现前后端无状态token认证授权（内含t
 2. 关于 token 的校验，自定义一 shiro 的一个拦截器，然后实现所有请求拦截，当然你也可以指定拦截 url ，然后在 自定义一个  Token 对象(这里说的 Token 对象就跟我们登录时候UsernamePasswordToken一样)，然后经过我们自定义的 JWTRealm 进行Token 有效校验，看看 前端传递过来的 Token 是否是过期的、无效的、过期需要刷新的、还是等等无效字符串无法解析的。最后做到 Token 的可控以及 Token 的刷新。
 ##  AccessToken 、RefreshToken 概念
 1. AccessToken ：用于请求传输过程中的用户授权标识，客户端每次请求都需要携带，处于安全考虑通常有效时长较短。
-2. 
-
+2. RefreshToken：一般用于刷新AccessToken，保存于服务端，客户端不可见，有效时间较长
+## redis 中保存 RefreshToken 信息(做到JWT的可控性)
+1. 登录认证通过后，需要在响应头中加上 AccessToken (在AccessToken 中保存当前时间戳和账号)信息返回。同时在 redis 中设置一条以【特定前缀加账号】为 key，value 为当前时间戳(登录时间)的 RefreshToken 。
+2. 再次请求时候，必须 AccessToken 没失效以及 Redis 存在所对应的 RefreshToken ，并且 RefreshToken 的时间戳和 AccessToken 信息中的时间戳一致才算 TOKEN 验证通过，才能继续访问我们具体的请求资源。如果退出登录再次登录获取新的 AccessToken ，旧的 AcessToken 就认证不了了，因为 Redis 中存放的 RefreshToken 时间戳只会和最新的 AccessToken 信息中携带的时间戳一致，这样每个用户就只能使用最新的 AccessToken 认证。
+3. Redis 的 RefreshToken 也可以用来判断用户是否在线，如果删除 Redis 的某个 RefreshToken，那这个 RefreshToken 所对应的 AccessToken 之后也就无法进行 token 认证了。就相当于控制了用户的登录，可以剔除用户。
+## 根据 RefreshToken 自动刷新 AccessToken
+1. 
