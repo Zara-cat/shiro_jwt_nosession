@@ -52,28 +52,21 @@ public class JwtRealm extends AuthorizingRealm {
         if (jwtToken.getPrincipal() == null){
             throw new AccountException("JWT token 参数异常");
         }
-        //从 JWTToken 中获取当前用户
-        String principal = jwtToken.getPrincipal().toString();
-        //查询数据库获取用户信息
-        User user = service.findUserByUsername(principal);
-        if (ObjectUtils.isEmpty(user)){
-            //用户不存在
-            throw new UnknownAccountException("用户不存在！");
-        }
-        System.out.println(user);
-        if (user.getLocked() == 1){
-            throw new LockedAccountException("该用户已被锁定，暂时无法登录");
-        }
-        return new SimpleAuthenticationInfo(user,principal,getName());
+        return new SimpleAuthenticationInfo(
+                jwtToken,
+                jwtToken.getPrincipal(),
+                getName());
     }
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
         System.out.println("进入 JwtRealm Authorization");
         SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+
         //获取当前用户
-        User user = (User) SecurityUtils.getSubject().getPrincipal();
+        JwtToken jwtToken = (JwtToken) SecurityUtils.getSubject().getPrincipal();
+        System.out.println(jwtToken.getPrincipal());
         //查询数据库获取用户的角色信息
-        User dbUser = service.findRolesByUserName(user.getUsername());
+        User dbUser = service.findRolesByUserName(jwtToken.getPrincipal().toString());
         if (!ObjectUtils.isEmpty(dbUser) && !CollectionUtils.isEmpty(dbUser.getRoles())) {
             dbUser.getRoles().stream().forEach(role -> {
                 info.addRole(role.getName());

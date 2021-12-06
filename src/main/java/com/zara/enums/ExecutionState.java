@@ -47,6 +47,7 @@ public enum ExecutionState {
     USER_USERNAME_REPETITION(2010, "用户名重复"),
     USER_LOCKED(2011,"该账户已被锁定，如需解锁请联系管理员！"),
     USER_AUTHENTICATION_FAIL(2012,"登录异常，请联系管理员！"),
+    USER_LOGOUTTED(2013,"用户已经退出，请先登录"),
 
     /**
      * 系统错误

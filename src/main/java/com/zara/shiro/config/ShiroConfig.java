@@ -1,6 +1,6 @@
 package com.zara.shiro.config;
 
-import com.zara.jwt.JwtFilter;
+import com.zara.jwt.JwtTokenFilter;
 import com.zara.shiro.MultiRealmAuthenticator;
 import com.zara.shiro.credentialsmatcher.JwtCredentialsMatcher;
 import com.zara.shiro.realm.DBRealm;
@@ -106,15 +106,16 @@ public class ShiroConfig {
      * @return
      */
     @Bean
-    public FilterRegistrationBean<Filter> registration(JwtFilter filter){
+    public FilterRegistrationBean<Filter> registration(JwtTokenFilter filter){
         FilterRegistrationBean<Filter> registration = new FilterRegistrationBean<Filter>(filter);
         registration.setEnabled(false);
         return registration;
     }
 
+
     @Bean
-    public JwtFilter jwtFilter(){
-        return new JwtFilter();
+    public JwtTokenFilter jwtTokenFilter(){
+        return new JwtTokenFilter();
     }
 
     /**
@@ -183,13 +184,13 @@ public class ShiroConfig {
 
         //添加 jwt 专用过滤器 ，拦截 /login 和 /login 外的请求
         Map<String,Filter> filterMap = new LinkedHashMap<>();
-        filterMap.put("jwtFilter",jwtFilter());
+        filterMap.put("jwtTokenFilter",jwtTokenFilter());
         shiroFilterFactoryBean.setFilters(filterMap);
 
         LinkedHashMap<String,String> filterChainDefinitionMap = new LinkedHashMap<String, String>();
         filterChainDefinitionMap.put("/login","anon"); // 可匿名访问
         filterChainDefinitionMap.put("/logout","logout");// 推出登录
-        filterChainDefinitionMap.put("/**","jwtFilter,authc");//需要登录才能访问
+        filterChainDefinitionMap.put("/**","jwtTokenFilter,authc");//需要登录才能访问
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         return shiroFilterFactoryBean;
     }

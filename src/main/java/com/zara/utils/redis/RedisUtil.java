@@ -311,7 +311,7 @@ public final class RedisUtil {
         try {
             redisTemplate.opsForHash().put(key, item, value);
             if (time > 0) {
-                expire(key, time);
+                expire(item, time);
             }
             return true;
         } catch (Exception e) {

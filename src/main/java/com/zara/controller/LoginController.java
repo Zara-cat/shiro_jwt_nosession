@@ -1,18 +1,22 @@
 package com.zara.controller;
 
+import com.zara.constant.SysConstant;
 import com.zara.enums.ExecutionState;
 import com.zara.jwt.JwtUtils;
+import com.zara.utils.redis.RedisUtil;
 import com.zara.utils.response.Responder;
 import com.zara.utils.response.ResultDTO;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.subject.Subject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -27,6 +31,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 @RestController
 public class LoginController {
+
+    @Autowired
+    private RedisUtil redisUtil;
 
     /**
      * 登录认证
@@ -44,9 +51,12 @@ public class LoginController {
         try {
             subject.login(usernamePasswordToken);
             //登录成功，签发 JWT token
-            String jwtToken = JwtUtils.sign(userName, JwtUtils.SECRET);
+            long currentTimeMillis = System.currentTimeMillis();
+            String jwtToken = JwtUtils.sign(userName, JwtUtils.SECRET,currentTimeMillis);
             //将签发的 JWT token 设置到 HttpServletResponse 的 Header 中
             ((HttpServletResponse) response).setHeader(JwtUtils.AUTH_HEADER,jwtToken);
+            //redis 存储 key:username value:当前时间搓
+            redisUtil.set(SysConstant.REFRESHTOKEN_PRE+userName,currentTimeMillis,SysConstant.REFRESHTOKEN_TIME);
             return Responder.successful(ExecutionState.USER_LOGIN_SUCCESS);
         } catch (UnknownAccountException e) { //账号不存在
             return Responder.failure(ExecutionState.USER_ACCOUNT_NOT_FOUND);
@@ -65,7 +75,8 @@ public class LoginController {
      * @return {@link ResultDTO}
      */
     @GetMapping(value = "/logout")
-    public ResultDTO<Object> logout(){
+    public ResultDTO<Object> logout(HttpServletRequest request){
+        String header = request.getHeader(JwtUtils.AUTH_HEADER);
         return Responder.successful("退出登录成功",null);
     }
 
